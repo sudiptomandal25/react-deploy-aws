@@ -10,33 +10,41 @@
         name: git
         state: present
 
-    # # Add the Node.js 16.x repository
-    # - name: Add Node.js 16.x repository
-    #   command: >
-    #     curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
-    #   args:
-    #     creates: /etc/yum.repos.d/nodesource-el.repo
+    - name: Install node required packages
+      ansible.builtin.yum:
+        name:
+          - gcc-c++
+          - make
+        state: present
+        
+    # Add the Node.js 16.x repository
+    - name: Add NodeSource repository for node.js 16
+      ansible.builtin.yum_repository:
+        name: nodesource
+        description: Node.js Packages for RHEL $basearch
+        baseurl: https://rpm.nodesource.com/pub_16.x/el/9/$basearch
+        gpgcheck: yes
+        gpgkey: https://rpm.nodesource.com/pub_16.x/el/NODESOURCE-GPG-SIGNING-KEY-EL
+        enabled: yes
+        state: present
 
     # Install Node.js 16
     - name: Install Node.js 16
-      yum:
+      ansible.builtin.yum:
         name: nodejs
         state: present
 
     # Verify Node.js and npm versions
     - name: Verify Node.js version
-      command: node -v
+      ansible.builtin.shell: |
+        node -v
+        npm -v
       register: node_version
       changed_when: false
 
-    - name: Verify npm version
-      command: npm -v
-      register: npm_version
-      changed_when: false
-
-    - name: Show installed Node.js version
-      debug:
-        msg: "Node.js version: {{ node_version.stdout }}"
+    - name: Display the nodejs version
+      ansible.builtin.debug:
+        msg: "Node.js version: {{ node_version.stdout_lines }}"
 
     - name: Show installed npm version
       debug:
