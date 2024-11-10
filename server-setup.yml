@@ -1,0 +1,81 @@
+---
+- name: Install Git, Node.js, and Docker on RHEL 9 EC2 instance
+  hosts: ec2_instances
+  become: true
+  tasks:
+
+    # Install Git
+    - name: Install Git
+      yum:
+        name: git
+        state: present
+
+    # # Add the Node.js 16.x repository
+    # - name: Add Node.js 16.x repository
+    #   command: >
+    #     curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+    #   args:
+    #     creates: /etc/yum.repos.d/nodesource-el.repo
+
+    # Install Node.js 16
+    - name: Install Node.js 16
+      yum:
+        name: nodejs
+        state: present
+
+    # Verify Node.js and npm versions
+    - name: Verify Node.js version
+      command: node -v
+      register: node_version
+      changed_when: false
+
+    - name: Verify npm version
+      command: npm -v
+      register: npm_version
+      changed_when: false
+
+    - name: Show installed Node.js version
+      debug:
+        msg: "Node.js version: {{ node_version.stdout }}"
+
+    - name: Show installed npm version
+      debug:
+        msg: "npm version: {{ npm_version.stdout }}"
+
+    # Install Docker
+    - name: Install required packages for Docker
+      yum:
+        name: 
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+
+    - name: Add signing key
+      ansible.builtin.rpm_key:
+        key: "https://download.docker.com/linux/rhel/gpg"
+        state: present
+
+    - name: Add repository into repo.d list
+      ansible.builtin.yum_repository:
+        name: docker
+        description: docker repository
+        baseurl: "https://download.docker.com/linux/rhel/$releasever/$basearch/stable"
+        enabled: true
+        gpgcheck: true
+        gpgkey: "https://download.docker.com/linux/rhel/gpg"
+
+    - name: Install Docker
+      ansible.builtin.yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+        update_cache: true
+
+    - name: Start Docker
+      ansible.builtin.service:
+        name: "docker"
+        enabled: true
+        state: started

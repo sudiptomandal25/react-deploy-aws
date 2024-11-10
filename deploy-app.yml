@@ -1,0 +1,30 @@
+---
+- name: Clone repo, build image, and start container
+  hosts: ec2_instances
+  vars_files:
+    - secrets.yml
+  become: false
+  vars:
+    git_repo_url: "https://github.com/sudiptomandal25/demo-react.git"
+    clone_dest: "/home/ec2-user/demo-react"
+
+  tasks:
+    - name: Ensure the destination directory exists
+      file:
+        path: "{{ clone_dest }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone the private GitHub repository using Personal Access Token
+      git:
+        repo: "https://{{ github_token }}@github.com/sudiptomandal25/demo-react.git"
+        dest: "{{ clone_dest }}"
+        version: "main"
+        clone: yes
+        update: yes
+    
+    - name: Build Docker image
+      command: docker build -t demo-app /var/www/html/react-demo
+
+    - name: Run Docker container
+      command: docker run -d -p 3000:3000 --name react-app-container demo-app
