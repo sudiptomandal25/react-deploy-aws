@@ -89,8 +89,6 @@ resource "aws_instance" "app_server" {
   }
 
   provisioner "local-exec" {
-    command = "echo '[ec2_instances]\n${self.public_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=/Users/sudipto/Documents/Code_Repos/learn-terraform-aws-instance/${var.key_name}' > inventory.ini"
+    command = "echo '[ec2_instances]\n${self.public_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=/Users/sudipto/Documents/Code_Repos/react-deploy-aws/${var.key_name}' > inventory.ini"
   }
 }
-
-
