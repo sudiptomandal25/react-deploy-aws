@@ -24,7 +24,7 @@
         update: yes
     
     - name: Build Docker image
-      command: docker build -t demo-app /var/www/html/react-demo
+      command: docker build -t demo-app /home/ec2-user/demo-react
 
     - name: Run Docker container
       command: docker run -d -p 3000:3000 --name react-app-container demo-app
